@@ -19,6 +19,9 @@ dev_dependencies:
   very_good_analysis: 11.0.0
 
 flutter:
+  config:
+    enable-swift-package-manager: false
+
   uses-material-design: true
 
   fonts:

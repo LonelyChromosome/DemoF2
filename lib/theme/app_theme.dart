@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:better_phenikaa_schedule/platform/home_widget_bridge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeId {
@@ -363,6 +363,10 @@ class AppThemeController extends ChangeNotifier {
       await prefs.setString(_widgetPreferenceKey, _theme.storageKey);
     }
     notifyListeners();
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      await _syncWidgetTheme();
+      return;
+    }
     final widgetTheme = prefs.getString(_widgetPreferenceKey);
     if (widgetTheme != _theme.storageKey) {
       final nativeApplied = await _applyWidgetThemeImmediately(
@@ -409,11 +413,7 @@ class AppThemeController extends ChangeNotifier {
   }
 
   Future<void> _syncWidgetTheme() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
-    await HomeWidget.updateWidget(
-      name: 'ScheduleWidgetProvider',
-      androidName: 'ScheduleWidgetProvider',
-    );
+    await HomeWidgetBridge.syncTheme(_theme.storageKey);
   }
 }
 

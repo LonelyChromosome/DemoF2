@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:better_phenikaa_schedule/features/qldt_intake/qldt_login.dart';
 import 'package:better_phenikaa_schedule/features/qldt_intake/qldt_models.dart';
+import 'package:better_phenikaa_schedule/platform/home_widget_bridge.dart';
 import 'package:better_phenikaa_schedule/theme/app_theme.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BetterPhenikaaScheduleApp extends StatefulWidget {
@@ -90,6 +89,7 @@ class _AppRootState extends State<_AppRoot> {
         final data = ImportedScheduleData.decode(raw);
         _data = data;
         _selectedDate = _initialDateFor(data);
+        await _publishWidget(data);
       }
     } on Object catch (error) {
       _errorMessage = 'Không đọc được dữ liệu cục bộ: $error';
@@ -107,22 +107,14 @@ class _AppRootState extends State<_AppRoot> {
   }
 
   Future<void> _publishWidget(ImportedScheduleData data) async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-      return;
-    }
     final next = _nextClass(data);
-    await HomeWidget.saveWidgetData<String>(
-      'subjectName',
-      next?.subjectName ?? 'Không có lịch học sắp tới',
-    );
-    await HomeWidget.saveWidgetData<String>('room', next?.room ?? '');
-    await HomeWidget.saveWidgetData<String>(
-      'time',
-      next == null ? '' : '${_time(next.startAt)} - ${_time(next.endAt)}',
-    );
-    await HomeWidget.updateWidget(
-      name: 'ScheduleWidgetProvider',
-      androidName: 'ScheduleWidgetProvider',
+    await HomeWidgetBridge.publishSchedule(
+      snapshot: data.encode(),
+      subjectName: next?.subjectName ?? 'Không có lịch học sắp tới',
+      room: next?.room ?? '',
+      time: next == null
+          ? ''
+          : '${_time(next.startAt)} - ${_time(next.endAt)}',
     );
   }
 
@@ -181,15 +173,7 @@ class _AppRootState extends State<_AppRoot> {
     await clearQldtSession();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_storageKey);
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      await HomeWidget.saveWidgetData<String>('subjectName', '');
-      await HomeWidget.saveWidgetData<String>('room', '');
-      await HomeWidget.saveWidgetData<String>('time', '');
-      await HomeWidget.updateWidget(
-        name: 'ScheduleWidgetProvider',
-        androidName: 'ScheduleWidgetProvider',
-      );
-    }
+    await HomeWidgetBridge.clearSchedule();
     if (mounted) {
       setState(() {
         _data = null;
