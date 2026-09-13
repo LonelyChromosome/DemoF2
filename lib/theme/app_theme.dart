@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:better_phenikaa_schedule/platform/home_widget_bridge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeId {
@@ -363,6 +363,10 @@ class AppThemeController extends ChangeNotifier {
       await prefs.setString(_widgetPreferenceKey, _theme.storageKey);
     }
     notifyListeners();
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      await _syncWidgetTheme();
+      return;
+    }
     final widgetTheme = prefs.getString(_widgetPreferenceKey);
     if (widgetTheme != _theme.storageKey) {
       final nativeApplied = await _applyWidgetThemeImmediately(
@@ -380,9 +384,8 @@ class AppThemeController extends ChangeNotifier {
     _theme = value;
     notifyListeners();
 
-    // Queue the native widget update at the exact theme tap. Android starts the
-    // visible transition only after this Activity leaves the foreground, so the
-    // animation cannot finish invisibly behind the theme picker.
+    // Dispatch the native widget update at the exact theme tap. Android keeps
+    // the current card stable until Home is visible; iOS reloads its timeline.
     final nativeUpdate = _applyWidgetThemeImmediately(value.storageKey);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_preferenceKey, value.storageKey);
@@ -409,11 +412,7 @@ class AppThemeController extends ChangeNotifier {
   }
 
   Future<void> _syncWidgetTheme() async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
-    await HomeWidget.updateWidget(
-      name: 'ScheduleWidgetProvider',
-      androidName: 'ScheduleWidgetProvider',
-    );
+    await HomeWidgetBridge.syncTheme(_theme.storageKey);
   }
 }
 

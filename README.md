@@ -29,6 +29,7 @@ Bài tập lớn nhóm 1 — ứng dụng **thời khóa biểu & lịch thi** c
 - Dio + CookieJar + InAppWebView + HTML parser
 - Secure Storage + SharedPreferences
 - Home Widget
+- iOS 15+, WidgetKit + App Groups
 - Freezed/JSON codegen
 - Mocktail
 - Very Good Analysis + Riverpod Lint
@@ -59,7 +60,8 @@ Lệnh này tự format code rồi chạy analyze + test.
 
 ### Máy local
 
-Yêu cầu Flutter 3.47.2, Dart 3.13, JDK 17 và Android SDK. Sau đó chạy:
+Yêu cầu Flutter 3.47.2 và Dart 3.13. Android cần JDK 17 + Android SDK;
+iPhone cần macOS + Xcode + CocoaPods. Sau đó chạy:
 
 ```bash
 bash tool/setup.sh
@@ -88,7 +90,11 @@ bash tool/quality.sh
 dart run build_runner build --delete-conflicting-outputs
 flutter run
 flutter build apk --debug
+flutter build ios --release --no-codesign
 ```
+
+Hướng dẫn simulator, ký app và App Group cho iPhone:
+`docs/IOS_PORT.md`.
 
 ## Quy tắc dữ liệu nhạy cảm
 
