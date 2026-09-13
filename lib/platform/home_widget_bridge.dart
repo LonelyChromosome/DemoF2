@@ -20,8 +20,8 @@ abstract final class HomeWidgetBridge {
     required String subjectName,
     required String room,
     required String time,
-  }) async {
-    if (!isSupported) return false;
+  }) {
+    if (!isSupported) return Future<bool>.value(false);
     return _guard(() async {
       await _configureIOS();
       if (_isIOS) {
@@ -34,8 +34,8 @@ abstract final class HomeWidgetBridge {
     });
   }
 
-  static Future<bool> clearSchedule() async {
-    if (!isSupported) return false;
+  static Future<bool> clearSchedule() {
+    if (!isSupported) return Future<bool>.value(false);
     return _guard(() async {
       await _configureIOS();
       if (_isIOS) {
@@ -48,8 +48,8 @@ abstract final class HomeWidgetBridge {
     });
   }
 
-  static Future<bool> syncTheme(String themeKey) async {
-    if (!isSupported) return false;
+  static Future<bool> syncTheme(String themeKey) {
+    if (!isSupported) return Future<bool>.value(false);
     return _guard(() async {
       await _configureIOS();
       if (_isIOS) {
